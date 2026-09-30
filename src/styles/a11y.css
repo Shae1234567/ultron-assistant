@@ -1,0 +1,9 @@
+/* Accessibility: visible keyboard focus states.
+   NOTE: this file must be imported once in src/main.tsx (not done automatically here). */
+
+button:focus-visible,
+input:focus-visible {
+  outline: 2px solid var(--cyan);
+  outline-offset: 2px;
+  box-shadow: var(--glow-sm);
+}

@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; width: 100%; height: 100%; overflow: hidden; }
+  svg { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="50%" cy="46%" r="65%">
+      <stop offset="0%" stop-color="#0d1f2e"/>
+      <stop offset="55%" stop-color="#071019"/>
+      <stop offset="100%" stop-color="#03060a"/>
+    </radialGradient>
+    <radialGradient id="core" cx="42%" cy="38%" r="60%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="28%" stop-color="#8fefff"/>
+      <stop offset="65%" stop-color="#00b8dc"/>
+      <stop offset="100%" stop-color="#004a5c" stop-opacity="0.2"/>
+    </radialGradient>
+    <linearGradient id="ring" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#eaf7ff"/>
+      <stop offset="55%" stop-color="#00d9ff"/>
+      <stop offset="100%" stop-color="#0891b2"/>
+    </linearGradient>
+    <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur stdDeviation="14" result="b"/>
+      <feMerge>
+        <feMergeNode in="b"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <polygon points="512,60 880,270 880,754 512,964 144,754 144,270"
+           fill="url(#bg)" stroke="#00d9ff" stroke-width="6" stroke-opacity="0.55"/>
+  <polygon points="512,120 828,300 828,724 512,904 196,724 196,300"
+           fill="none" stroke="#00d9ff" stroke-width="2" stroke-opacity="0.28"/>
+
+  <g filter="url(#glow)">
+    <circle cx="512" cy="512" r="330" fill="none" stroke="url(#ring)" stroke-width="10" opacity="0.9"
+            stroke-dasharray="120 40 60 40 90 30" stroke-linecap="butt"/>
+    <circle cx="512" cy="512" r="270" fill="none" stroke="#00d9ff" stroke-width="4" opacity="0.55"
+            stroke-dasharray="6 14"/>
+
+    <g stroke="url(#ring)" stroke-width="16" fill="none" stroke-linecap="square">
+      <path d="M 512 158 A 354 354 0 0 1 733 249"/>
+      <path d="M 866 512 A 354 354 0 0 1 775 733"/>
+      <path d="M 512 866 A 354 354 0 0 1 291 775"/>
+      <path d="M 158 512 A 354 354 0 0 1 249 291"/>
+    </g>
+
+    <circle cx="512" cy="512" r="168" fill="url(#core)"/>
+    <circle cx="512" cy="512" r="196" fill="none" stroke="#eaf7ff" stroke-width="5" opacity="0.85"/>
+  </g>
+
+  <path d="M 430 440 L 430 560 A 82 82 0 0 0 594 560 L 594 440"
+        fill="none" stroke="#03131a" stroke-width="34" stroke-linecap="round"/>
+</svg>
+</body>
+</html>

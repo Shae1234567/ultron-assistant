@@ -1,0 +1,268 @@
+/* ── Panels: clipped corners, hairline glow border, no rounded rects ── */
+
+.hud-panel {
+  --c: var(--cut);
+  position: relative;
+  padding: var(--hairline);
+  background: linear-gradient(
+    160deg,
+    var(--cyan-55) 0%,
+    var(--cyan-20) 22%,
+    rgba(0, 217, 255, 0.06) 55%,
+    var(--cyan-35) 100%
+  );
+  clip-path: polygon(
+    0 var(--c), var(--c) 0,
+    100% 0, 100% calc(100% - var(--c)),
+    calc(100% - var(--c)) 100%, 0 100%
+  );
+  filter: drop-shadow(0 0 7px rgba(0, 217, 255, 0.18));
+  min-height: 0;
+}
+
+.hud-panel__inner {
+  position: relative;
+  height: 100%;
+  background:
+    linear-gradient(180deg, rgba(0, 217, 255, 0.05) 0%, rgba(0, 0, 0, 0) 42%),
+    var(--panel);
+  clip-path: polygon(
+    0 calc(var(--c) - 1px), calc(var(--c) - 1px) 0,
+    100% 0, 100% calc(100% - var(--c) + 1px),
+    calc(100% - var(--c) + 1px) 100%, 0 100%
+  );
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+/* Targeting brackets in the square corners */
+.hud-panel__bracket {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  border: 1px solid var(--cyan);
+  opacity: 0.85;
+  pointer-events: none;
+}
+.hud-panel__bracket--tr { top: 4px; right: 4px; border-left: 0; border-bottom: 0; }
+.hud-panel__bracket--bl { bottom: 4px; left: 4px; border-right: 0; border-top: 0; }
+
+/* Panel header */
+.panel-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 10px 7px 14px;
+  flex: 0 0 auto;
+  min-width: 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--cyan-20);
+  background: linear-gradient(90deg, var(--cyan-12), transparent 65%);
+}
+
+.panel-head__title {
+  flex: 0 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: var(--font-display);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  text-shadow: var(--text-glow);
+  white-space: nowrap;
+}
+
+.panel-head__rule {
+  flex: 1 1 auto;
+  min-width: 6px;
+  height: 1px;
+  background: linear-gradient(90deg, var(--cyan-35), transparent);
+}
+
+.panel-head__meta {
+  flex: 0 0 auto;
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--dim);
+  letter-spacing: 0.08em;
+  white-space: nowrap;
+}
+
+.panel-body { flex: 1 1 auto; min-height: 0; overflow-y: auto; overflow-x: hidden; }
+
+/* ── Ambient background: grid, vignette, scanlines, drifting sweep ──── */
+
+.bg-layer { position: fixed; inset: 0; pointer-events: none; z-index: 0; }
+
+.bg-grid {
+  /* Overscan past the viewport edge so a transform can slide it by exactly
+     one tile with no visible seam - animating `background-position` here
+     instead (as this used to) is not a compositor-only property, so it
+     forced a full-viewport repaint every frame for the entire 24s loop,
+     continuously, for as long as the app is open. `transform` runs on the
+     compositor thread instead - effectively free. */
+  inset: -44px;
+  background-image:
+    linear-gradient(rgba(0, 217, 255, 0.055) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 255, 0.055) 1px, transparent 1px);
+  background-size: 44px 44px;
+  animation: grid-drift 24s linear infinite;
+  will-change: transform;
+}
+
+.bg-grid--fine {
+  background-image:
+    linear-gradient(rgba(0, 217, 255, 0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 217, 255, 0.03) 1px, transparent 1px);
+  background-size: 11px 11px;
+  opacity: 0.6;
+}
+
+@keyframes grid-drift {
+  from { transform: translate(0, 0); }
+  to   { transform: translate(44px, 44px); }
+}
+
+.bg-vignette {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 45%, rgba(0, 217, 255, 0.07), transparent 70%),
+    radial-gradient(ellipse 120% 90% at 50% 50%, transparent 35%, rgba(2, 5, 11, 0.85) 100%);
+}
+
+.bg-scanlines {
+  background: repeating-linear-gradient(
+    0deg, rgba(0, 217, 255, 0.028) 0px, rgba(0, 217, 255, 0.028) 1px, transparent 1px, transparent 3px
+  );
+  opacity: 0.55;
+}
+
+.bg-sweep {
+  background: linear-gradient(
+    180deg, transparent 0%, rgba(0, 217, 255, 0.055) 48%, rgba(0, 217, 255, 0.11) 50%,
+    rgba(0, 217, 255, 0.055) 52%, transparent 100%
+  );
+  height: 40vh;
+  animation: sweep-down 9s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes sweep-down {
+  0%   { transform: translateY(-45vh); opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { transform: translateY(105vh); opacity: 0; }
+}
+
+/* ── Shared motion primitives ───────────────────────────────────────── */
+
+@keyframes spin-cw  { to { transform: rotate(360deg); } }
+@keyframes spin-ccw { to { transform: rotate(-360deg); } }
+
+@keyframes pulse-soft {
+  0%, 100% { opacity: 0.45; }
+  50%      { opacity: 1; }
+}
+
+@keyframes blink-hard {
+  0%, 44%   { opacity: 1; }
+  45%, 100% { opacity: 0.18; }
+}
+
+@keyframes dash-march { to { stroke-dashoffset: -1000; } }
+
+@keyframes rise-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.spin-slow  { animation: spin-cw 40s linear infinite; transform-origin: center; }
+.spin-med   { animation: spin-ccw 18s linear infinite; transform-origin: center; }
+.spin-fast  { animation: spin-cw 7s linear infinite; transform-origin: center; }
+
+/* ── Controls ───────────────────────────────────────────────────────── */
+
+.hud-btn {
+  position: relative;
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  padding: 6px 12px;
+  background: var(--cyan-12);
+  border: 1px solid var(--cyan-35);
+  clip-path: polygon(0 6px, 6px 0, 100% 0, 100% calc(100% - 6px), calc(100% - 6px) 100%, 0 100%);
+  transition: background 0.16s, color 0.16s, box-shadow 0.16s, transform 0.16s;
+  white-space: nowrap;
+}
+.hud-btn:hover:not(:disabled) {
+  background: var(--cyan-35);
+  color: var(--white);
+  box-shadow: var(--glow-md);
+}
+.hud-btn:active:not(:disabled) { transform: translateY(1px); }
+.hud-btn:disabled { opacity: 0.34; cursor: not-allowed; }
+.hud-btn--active {
+  background: var(--cyan);
+  color: var(--void);
+  box-shadow: var(--glow-md);
+}
+.hud-btn--danger { color: var(--red); border-color: rgba(255, 59, 78, 0.45); background: rgba(255, 59, 78, 0.1); }
+.hud-btn--danger:hover:not(:disabled) { background: rgba(255, 59, 78, 0.3); color: #fff; box-shadow: 0 0 12px rgba(255, 59, 78, 0.5); }
+
+.hud-input {
+  width: 100%;
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--white);
+  padding: 7px 10px;
+  background: rgba(0, 217, 255, 0.06);
+  border: 1px solid var(--cyan-20);
+  transition: border-color 0.16s, box-shadow 0.16s;
+}
+.hud-input:focus { border-color: var(--cyan-55); box-shadow: inset 0 0 10px rgba(0, 217, 255, 0.12); }
+.hud-input::placeholder { color: var(--dimmer); }
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-mono);
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--cyan);
+  padding: 2px 7px;
+  border: 1px solid var(--cyan-20);
+  background: var(--cyan-12);
+}
+.chip--muted { color: var(--dim); border-color: rgba(107, 139, 164, 0.25); background: rgba(107, 139, 164, 0.08); }
+.chip--good  { color: var(--green); border-color: rgba(0, 255, 157, 0.3); background: rgba(0, 255, 157, 0.08); }
+.chip--bad   { color: var(--red); border-color: rgba(255, 59, 78, 0.3); background: rgba(255, 59, 78, 0.08); }
+
+.dot { width: 6px; height: 6px; flex: 0 0 6px; background: currentColor; box-shadow: 0 0 6px currentColor; }
+.dot--live { animation: pulse-soft 1.6s ease-in-out infinite; }
+
+.label-xs {
+  font-family: var(--font-display);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--dim);
+}
+
+.mono { font-family: var(--font-mono); }
+.text-dim { color: var(--dim); }
+.empty-note {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  color: var(--dim);
+  padding: 18px 16px;
+  line-height: 1.6;
+}

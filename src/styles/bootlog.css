@@ -1,0 +1,84 @@
+/* ── Boot log ───────────────────────────────────────────────────────────
+   Typed terminal log rendered alongside BootSequence's checks (see
+   BootLog.tsx). Colors/fonts reuse the same --cyan/--red/--font-mono/--dim
+   tokens boot.css already uses for .boot__check-*; classes are namespaced
+   .bootlog- to avoid colliding with anything in boot.css. */
+
+.bootlog {
+  position: relative;
+  z-index: 1;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 260px;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  letter-spacing: 0.06em;
+}
+
+.bootlog-line {
+  display: flex;
+  align-items: baseline;
+  white-space: nowrap;
+}
+
+.bootlog-typewriter {
+  display: inline-block;
+  overflow: hidden;
+  white-space: nowrap;
+  vertical-align: bottom;
+  width: 0;
+  animation-name: boot-typewriter;
+  animation-timing-function: steps(var(--bootlog-chars), end);
+  animation-fill-mode: forwards;
+}
+
+.bootlog-prefix {
+  color: var(--dim);
+}
+
+.bootlog-status {
+  font-weight: 700;
+}
+.bootlog-status--ok {
+  color: var(--cyan);
+}
+.bootlog-status--warn {
+  color: var(--red);
+}
+
+.bootlog-elapsed {
+  color: var(--dimmer);
+}
+
+.bootlog-cursor {
+  display: inline-block;
+  width: 6px;
+  margin-left: 2px;
+  color: var(--cyan);
+  animation: boot-log-cursor 530ms steps(1) infinite;
+}
+.bootlog-cursor::before {
+  content: '\2588'; /* █ */
+}
+
+@keyframes boot-typewriter {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+@keyframes boot-log-cursor {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
