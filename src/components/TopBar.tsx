@@ -31,6 +31,8 @@ export function TopBar() {
   const d2l = useStore((s) => s.d2l);
   const setOverlay = useStore((s) => s.setOverlay);
   const [maximized, setMaximized] = useState(false);
+  const [version, setVersion] = useState('');
+  useEffect(() => { void ultron.app.versions().then((v) => setVersion(v.app.replace(/^(\d+\.\d+).*/, '$1'))).catch(() => {}); }, []);
 
   useEffect(() => ultron.win.onState(({ maximized: m }) => setMaximized(m)), []);
 
@@ -53,7 +55,7 @@ export function TopBar() {
       <div className="topbar__drag">
         <div>
           <div className="brand"><GlitchText>ULTRON</GlitchText></div>
-          <div className="brand__sub">COMMAND CENTER v2.0</div>
+          <div className="brand__sub">COMMAND CENTER{version ? ` v${version}` : ''}</div>
         </div>
 
         <Clock />

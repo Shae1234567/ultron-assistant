@@ -38,7 +38,8 @@ describe('Spotify on this PC (Spotify Free, no Web API)', () => {
     expect(opened).toEqual(['spotify:search:lofi%20beats']);
   });
 
-  it.runIf(process.platform === 'win32')('asks the real Windows media controls (status only - plays nothing)', async () => {
+  // Not on CI: GitHub's Windows Server runners have no desktop media session service.
+  it.runIf(process.platform === 'win32' && !process.env.CI)('asks the real Windows media controls (status only - plays nothing)', async () => {
     const s = await sp.mediaState('status');
     expect(typeof s.session).toBe('boolean');
     if (s.session) expect(typeof s.status).toBe('string');

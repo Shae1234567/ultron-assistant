@@ -89,6 +89,16 @@ Some apps have limits:
 - **Instagram** works only with a *Creator* or *Business* account. Switching is free: Instagram → Settings → Account type and tools.
 - **Spotify** through Composio needs Spotify Premium and your own Spotify developer app. With Spotify Free, use the built-in Spotify control instead ("pause the music", "skip this song").
 
+### School: D2L Brightspace (optional)
+
+If your school uses D2L Brightspace, Ultron can tell you what's due, your grades and announcements, and turn due dates into reminders.
+
+1. Open the **Apps** panel and find **D2L Brightspace - School**.
+2. Type the address you open D2L at, for example `myschool.brightspace.com`. Copying the whole address from your browser's top bar works too.
+3. Press **Sign in to D2L**. A D2L window opens: sign in with your school account as usual, including any 2-step check.
+
+Ultron never sees your password. It keeps the signed-in session, so you stay signed in after closing it. Then ask things like "what's due this week?" or "any new announcements?".
+
 ### 4. Your own Discord bot (optional)
 
 Ultron can manage a Discord server you own through **your own private bot**:

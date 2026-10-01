@@ -2,7 +2,7 @@
   "name": "ultron",
   "productName": "Ultron",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A desktop AI command center: an animated HUD, a team of seven AI agents, long-term memory in an Obsidian vault, and your apps through Composio. Bring your own AI: Gemini, OpenAI-compatible, Anthropic or a local model.",
   "main": "dist-electron/main.js",
   "scripts": {
@@ -13,7 +13,8 @@
     "package:dir": "npm run build && electron-builder --win --dir",
     "postinstall": "playwright install chromium",
     "test": "vitest run",
-    "test:watch": "vitest"
+    "test:watch": "vitest",
+    "prebuild": "node -e \"require('fs').rmSync('dist-electron',{recursive:true,force:true})\""
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.130.0",

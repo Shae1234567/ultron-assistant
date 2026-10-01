@@ -257,6 +257,7 @@ export function AppsPanel({ onClose }: { onClose: () => void }) {
   const [busySlug, setBusySlug] = useState<string | null>(null);
   const [d2lUrl, setD2lUrl] = useState(settings?.d2l.baseUrl ?? '');
   const [d2lBusy, setD2lBusy] = useState(false);
+  const [d2lProblem, setD2lProblem] = useState<string | null>(null);
   const [signingIn, setSigningIn] = useState(false);
 
   useEffect(() => {
@@ -297,13 +298,29 @@ export function AppsPanel({ onClose }: { onClose: () => void }) {
   };
 
   const d2lSignIn = async () => {
+    setD2lProblem(null);
+    if (!d2lUrl.trim()) {
+      setD2lProblem('Type your school\'s D2L address first - the web address you open D2L at, e.g. myschool.brightspace.com.');
+      return;
+    }
     setD2lBusy(true);
-    if (settings && d2lUrl.trim() && d2lUrl.trim() !== settings.d2l.baseUrl) {
-      setSettings(await ultron.settings.save({ d2l: { baseUrl: d2lUrl.trim() } }));
+    let base = settings?.d2l.baseUrl ?? '';
+    if (settings && d2lUrl.trim() !== base) {
+      const saved = await ultron.settings.save({ d2l: { baseUrl: d2lUrl.trim() } });
+      setSettings(saved);
+      base = saved.d2l.baseUrl;
+      // Shown the way Ultron will use it: "myschool.brightspace.com" becomes "https://myschool.brightspace.com".
+      setD2lUrl(base || d2lUrl);
+    }
+    if (!base) {
+      setD2lBusy(false);
+      setD2lProblem(`"${d2lUrl.trim()}" doesn't look like a web address. Open D2L in your browser and copy the address from the top bar.`);
+      return;
     }
     const s = await ultron.d2l.signIn();
     setD2L(s);
     setD2lBusy(false);
+    if (!s.signedIn) setD2lProblem(s.error ?? 'Not signed in yet - finish signing in in the D2L window, or press Sign in again.');
   };
 
   const google = apps?.apps.filter((a) => a.group === 'Google') ?? [];
@@ -412,7 +429,14 @@ export function AppsPanel({ onClose }: { onClose: () => void }) {
           <span className="dot" /> {d2l?.signedIn ? `SIGNED IN${d2l.user ? ` AS ${d2l.user.toUpperCase()}` : ''}` : 'NOT SIGNED IN'}
         </div>
         <div style={{ display: 'flex', gap: 6 }}>
-          <input className="hud-input" value={d2lUrl} onChange={(e) => setD2lUrl(e.target.value)} aria-label="D2L address" />
+          <input
+            className="hud-input"
+            value={d2lUrl}
+            placeholder="your school's D2L address, e.g. myschool.brightspace.com"
+            onChange={(e) => { setD2lUrl(e.target.value); setD2lProblem(null); }}
+            onKeyDown={(e) => { if (e.key === 'Enter' && !d2l?.signedIn) void d2lSignIn(); }}
+            aria-label="D2L address"
+          />
           {d2l?.signedIn ? (
             <>
               <button className="hud-btn" onClick={() => void ultron.d2l.open()}>Open D2L</button>
@@ -422,10 +446,14 @@ export function AppsPanel({ onClose }: { onClose: () => void }) {
             <button className="hud-btn hud-btn--active" onClick={() => void d2lSignIn()} disabled={d2lBusy}>{d2lBusy ? 'Waiting for sign-in...' : 'Sign in to D2L'}</button>
           )}
         </div>
+        {(d2lProblem || (!d2l?.signedIn && d2l?.error && d2lUrl.trim())) && (
+          <div className="alert-strip alert-strip--warn" style={{ marginTop: 8 }}><span className="dot" />{d2lProblem ?? d2l?.error}</div>
+        )}
         <div className="field__hint">
-          A normal D2L window opens and you sign in yourself (CBE ID and password, plus any 2-step check). Ultron never sees
-          your password - it only keeps the signed-in session, and uses it to read what's due, grades and announcements.
-          You stay signed in after closing Ultron. Hermes checks it when you ask; Chronos can turn due dates into reminders.
+          For schools that use D2L Brightspace. Type the address you open D2L at, then press Sign in: a normal D2L window
+          opens and you sign in yourself with your school account (plus any 2-step check). Ultron never sees your password -
+          it only keeps the signed-in session, and uses it to read what's due, grades and announcements. You stay signed in
+          after closing Ultron. Hermes checks it when you ask; Chronos can turn due dates into reminders.
         </div>
       </div>
 

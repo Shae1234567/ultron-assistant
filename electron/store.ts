@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { app } from 'electron';
+import { schoolUrl } from './schoolUrl';
 
 export interface IndexedFolder {
   path: string;
@@ -213,7 +214,8 @@ function normalize(raw: Partial<Settings> & { brain?: string }): Settings {
     addons: { hindsight: s.addons?.hindsight !== false, askBrowserAgent: s.addons?.askBrowserAgent === true },
     folders: Array.isArray(s.folders) ? s.folders : [],
   };
-  if (out.d2l.baseUrl && !/^https:\/\/[^\s/]+/.test(out.d2l.baseUrl)) out.d2l.baseUrl = DEFAULTS.d2l.baseUrl;
+  // However the school's address was typed ("myschool.brightspace.com", http, a whole copied link) - not dropped.
+  out.d2l.baseUrl = schoolUrl(out.d2l.baseUrl);
   if (!/^https?:\/\/[^\s/]+/.test(out.openai.baseUrl)) out.openai.baseUrl = DEFAULTS.openai.baseUrl;
   if (!Number.isFinite(out.ollama.numCtx) || out.ollama.numCtx < 2048) out.ollama.numCtx = DEFAULTS.ollama.numCtx;
   if (!out.composio.userId.trim()) out.composio.userId = DEFAULTS.composio.userId;

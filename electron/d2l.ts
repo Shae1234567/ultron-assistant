@@ -26,12 +26,23 @@ function ses(): Session {
   return session.fromPartition(PARTITION);
 }
 
-export const NOT_SET_UP = 'D2L is not set up: add your school\'s Brightspace address in Settings (Apps & school), then sign in from the Apps panel.';
+export const NOT_SET_UP = 'D2L is not set up yet: open the Apps panel, type your school\'s D2L address in the D2L Brightspace section (e.g. myschool.brightspace.com), and press Sign in to D2L.';
 
 /** The school's Brightspace address, or '' when the operator has not set one. */
 export function baseUrl(): string {
   const raw = (getSettings().d2l.baseUrl || '').trim();
   return raw.replace(/\/+$/, '').replace(/\/d2l(\/.*)?$/, '');
+}
+
+/** A network error in words: "net::ERR_NAME_NOT_RESOLVED" means the address is wrong, not that D2L is down. */
+export function friendlyError(e: unknown, url: string): string {
+  const msg = e instanceof Error ? e.message : String(e);
+  const host = url.replace(/^https:\/\//, '');
+  if (/ERR_NAME_NOT_RESOLVED|ENOTFOUND|getaddrinfo/i.test(msg)) return `There is no website at ${host} - check the D2L address (it's the one in your browser's top bar when you're on D2L).`;
+  if (/ERR_INTERNET_DISCONNECTED|ERR_NETWORK_CHANGED|ENETUNREACH/i.test(msg)) return 'No internet connection - D2L can\'t be reached right now.';
+  if (/ERR_CONNECTION|ECONNREFUSED|ETIMEDOUT|ERR_TIMED_OUT/i.test(msg)) return `${host} isn't answering right now - try again in a minute, and check the address is right.`;
+  if (/ERR_CERT|certificate/i.test(msg)) return `${host} has a security certificate problem - check the address is your school's D2L.`;
+  return msg;
 }
 
 /** The address, or an error the tools pass on when there is none. */
@@ -169,7 +180,7 @@ export async function status(): Promise<D2LStatus> {
       const me = await whoami().catch(() => null);
       if (me) return { baseUrl: url, signedIn: true, user: [me.FirstName, me.LastName].filter(Boolean).join(' ') || me.UniqueName };
     }
-    return { baseUrl: url, signedIn: false, error: e instanceof D2LAuthError ? undefined : e instanceof Error ? e.message : String(e) };
+    return { baseUrl: url, signedIn: false, error: e instanceof D2LAuthError ? undefined : friendlyError(e, url) };
   }
 }
 
